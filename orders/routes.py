@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from app.utils.deps import get_db, get_current_user
+from app.utils.deps import get_db, get_current_user, user_required
 from app.auth.models import User
 from app.orders import models, schemas
 from app.orders.models import Order, OrderItem
@@ -9,12 +9,12 @@ from app.orders.models import Order, OrderItem
 router = APIRouter()
 
 @router.get("/", response_model=List[schemas.OrderOut])
-def view_order_history(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def view_order_history(db: Session = Depends(get_db), current_user: User = Depends(user_required)):
     orders = db.query(Order).filter(Order.user_id == current_user.id).order_by(Order.created_at.desc()).all()
     return orders
 
 @router.get("/{order_id}", response_model=schemas.OrderDetailOut)
-def view_order_details(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def view_order_details(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(user_required)):
     order = db.query(Order).filter(Order.id == order_id, Order.user_id == current_user.id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")

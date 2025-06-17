@@ -21,7 +21,6 @@ def get_current_user(token: HTTPAuthorizationCredentials = Depends(oauth2_scheme
         detail="Could not validate credentials"
     )
     try:
-        # 👉 Use token.credentials here
         payload = jwt.decode(token.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
@@ -38,3 +37,8 @@ def admin_required(current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
+
+def user_required(current_user: User = Depends(get_current_user)) : 
+    if current_user.role != "user":
+        raise HTTPException(status_code=403, detail="Only users can perform this action") 
+    return current_user 

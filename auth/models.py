@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum
 from app.core.database import Base
 import enum
 
@@ -19,7 +19,7 @@ class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer)
+    user_id = Column(Integer, ForeignKey("users.id"))
     token = Column(String, unique=True)
-    expiration_time = Column(String)
-    used = Column(String, default="false")
+    expiration_time = Column(DateTime)
+    used = Column(Boolean, default=False)

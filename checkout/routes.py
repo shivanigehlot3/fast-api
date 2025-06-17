@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.utils.deps import get_db, get_current_user
+from app.utils.deps import get_db, user_required
 from app.auth.models import User
 from app.cart.models import Cart
 from app.products.models import Product
@@ -9,7 +9,7 @@ from app.orders.models import Order, OrderItem
 router = APIRouter()
 
 @router.post("/")
-def checkout(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def checkout(db: Session = Depends(get_db), current_user: User = Depends(user_required)):
     cart_items = db.query(Cart).filter(Cart.user_id == current_user.id).all()
     if not cart_items:
         raise HTTPException(status_code=400, detail="Cart is empty")

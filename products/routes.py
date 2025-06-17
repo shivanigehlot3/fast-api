@@ -2,12 +2,11 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.products import models, schemas
-from app.utils.deps import get_db, get_current_user, admin_required
+from app.utils.deps import get_db, admin_required
 
 router = APIRouter()
 
-# ---------- ADMIN CRUD ----------
-
+#admin crud  -->
 @router.post("/admin/products", response_model=schemas.ProductOut)
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db), _ = Depends(admin_required)):
     db_product = models.Product(**product.dict())
@@ -51,7 +50,7 @@ def delete_product(id: int, db: Session = Depends(get_db), _ = Depends(admin_req
     db.commit()
     return {"message": "Product deleted successfully"}
 
-# ---------- PUBLIC PRODUCT APIs ----------
+#public product api -->
 
 @router.get("/", response_model=List[schemas.ProductOut])
 def list_products_public(

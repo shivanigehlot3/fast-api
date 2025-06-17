@@ -25,3 +25,4 @@ class ProductOut(ProductBase):
 
     class Config:
         orm_mode = True
+

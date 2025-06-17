@@ -29,8 +29,8 @@ def signup(user: schemas.SignupRequest, db: Session = Depends(get_db)):
         hashed_password=hashed_pw,
         role=user.role
     )
-    db.add(new_user)
-    db.commit()
+    db.add(new_user)  # it’s not inserted yet — it’s just staged.
+    db.commit() #This executes the INSERT statement.  stored in db
     db.refresh(new_user)
     return {"message": "Signup successful"}
 
@@ -57,8 +57,8 @@ def forgot_password(request: schemas.ForgotPasswordRequest, db: Session = Depend
     reset = models.PasswordResetToken(
         user_id=user.id,
         token=token,
-        expiration_time=expires.isoformat(),
-        used="false"
+        expiration_time=expires,
+        used=False
     )
     db.add(reset)
     db.commit()
@@ -72,20 +72,24 @@ def forgot_password(request: schemas.ForgotPasswordRequest, db: Session = Depend
 def reset_password(request: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
     token_entry = db.query(models.PasswordResetToken).filter(
         models.PasswordResetToken.token == request.token,
-        models.PasswordResetToken.used == "false"
+        models.PasswordResetToken.used == False
     ).first()
 
     if not token_entry:
         raise HTTPException(status_code=404, detail="Invalid or expired token")
 
-    if datetime.fromisoformat(token_entry.expiration_time) < datetime.now(timezone.utc):
+    expiration_time = token_entry.expiration_time
+    if expiration_time.tzinfo is None:
+        expiration_time = expiration_time.replace(tzinfo=timezone.utc)
+
+    if expiration_time < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Token expired")
 
-    user = db.query(models.User).filter(models.User.id == token_entry.user_id).first()
+    user = db.query(models.User).filter(models.User.id == token_entry.user_id).first() #user exist or not
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     user.hashed_password = utils.hash_password(request.new_password)
-    token_entry.used = "true"
+    token_entry.used = True
     db.commit()
     return {"message": "Password reset successful"}

@@ -11,4 +11,3 @@ class Product(Base):
     stock = Column(Integer, nullable=False)
     category = Column(String, nullable=False)
     image_url = Column(String)
-

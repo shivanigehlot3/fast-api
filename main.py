@@ -22,14 +22,13 @@ app = FastAPI(
     description="FastAPI backend for E-commerce platform"
 )
 
-# Routers
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(product_router, prefix="/products", tags=["Products"])
 app.include_router(cart_router, prefix="/cart", tags=["Cart"])
 app.include_router(checkout_router, prefix="/checkout", tags=["Checkout"])
 app.include_router(orders_router, prefix="/orders", tags=["Orders"])
 
-# CORS middleware
+# CORS middleware  --->
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -38,7 +37,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global error handler
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
@@ -50,17 +48,15 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         },
     )
 
-# Setup your own logger
 logger = logging.getLogger("myapp.request")
 logger.setLevel(logging.INFO)
 
-# Optional: Add console handler
 console_handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-# Log each request (via middleware)
+# Log request -->
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info(f"{request.client.host} - {request.method} {request.url.path}")
